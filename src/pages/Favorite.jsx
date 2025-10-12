@@ -1,28 +1,26 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import react from 'react';
+import { dummyShowsData } from '../assets/assets';
+import MovieCard from '../components/MovieCard';
+import BlurCircle from '../components/BlurCircle';
 
-const Favorite = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 pt-20">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-white mb-8 text-center">
-          My Favorites
-        </h1>
-        
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">❤️</div>
-          <h2 className="text-2xl font-semibold text-white mb-4">No Favorites Yet</h2>
-          <p className="text-gray-400 mb-8">Add movies to your favorites to see them here!</p>
-          <Link 
-            to="/movies"
-            className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300"
-          >
-            Browse Movies
-          </Link>
-        </div>
+const Favorite = () =>{
+  return dummyShowsData.length >0 ? (
+    <div className='relative my-40 mb-60 px-6md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
+
+      <BlurCircle top='150px' left='0px'/>
+      <BlurCircle bottom='50px' right='50px'/>
+      <h1 className='text-lg font-medium my-4'>Your Favorite Movies</h1>
+      <div className='flex flex-wrap max-sm:justify-center gap-8'>
+        {dummyShowsData.map((movie)=>(
+          <MovieCard movie={movie} key={movie._id}/>
+        ))}
       </div>
     </div>
-  );
-};
+  ) :(
+    <div className='felx flex-col items-center justify-center h-screen'>
+      <h1 className='text-3xl font-bold text-center'>No movies available</h1>
+    </div>
+  )
+}
 
 export default Favorite;
