@@ -1,87 +1,56 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { dummyBookingData } from "../assets/assets";
+import React, { useState, useEffect } from 'react';
+import Loading from '../components/Loading';
+import BlurCircle from '../components/BlurCircle';
+import { dummyBookingData } from '../assets/assets';
+import { dateFormat } from '../lib/dateFormat';
+import timeFormat from '../lib/timeFormat';
+
 
 const MyBookings = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 pt-20">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-white mb-8 text-center">
-          My Bookings
-        </h1>
-        
-        {dummyBookingData.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🎫</div>
-            <h2 className="text-2xl font-semibold text-white mb-4">No Bookings Yet</h2>
-            <p className="text-gray-400 mb-8">Start booking your favorite movies!</p>
-            <Link 
-              to="/movies"
-              className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300"
-            >
-              Browse Movies
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {dummyBookingData.map((booking, index) => (
-              <div key={index} className="bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div>
-                    <img 
-                      src={booking.show.movie.poster_path} 
-                      alt={booking.show.movie.title}
-                      className="w-full h-64 object-cover rounded-lg"
-                    />
-                  </div>
-                  <div className="md:col-span-2 text-white">
-                    <h3 className="text-2xl font-bold mb-2">{booking.show.movie.title}</h3>
-                    <p className="text-gray-400 mb-4">{booking.show.movie.overview}</p>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center">
-                        <span className="text-gray-400 mr-2">Show Date:</span>
-                        <span className="text-white">{new Date(booking.show.showDateTime).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-gray-400 mr-2">Show Time:</span>
-                        <span className="text-white">{new Date(booking.show.showDateTime).toLocaleTimeString()}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-gray-400 mr-2">Seats:</span>
-                        <span className="text-white">{booking.bookedSeats.join(", ")}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-gray-400 mr-2">Amount:</span>
-                        <span className="text-white font-semibold">Rs.{booking.amount}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-gray-400 mr-2">Status:</span>
-                        <span className={`px-2 py-1 rounded text-sm ${booking.isPaid ? 'bg-green-500' : 'bg-yellow-500'}`}>
-                          {booking.isPaid ? 'Paid' : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-4">
-                      <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-300">
-                        Download Ticket
-                      </button>
-                      {!booking.isPaid && (
-                        <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-300">
-                          Pay Now
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+  const currency = import.meta.env.VITE_CURRENCY;
+
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const getMyBookings = async() =>{
+    setBookings(dummyBookingData);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    getMyBookings();
+  }, []);
+    return !loading ? (
+      <div className='relative px-6 md:px-16 lg:px-40 pt-32 md:pt-40 min-h-[80vh]'>
+        <BlurCircle top="100px" left="100px" />
+        <div><BlurCircle bottom="0px" right="600px" /></div>
+        <h1 className='text-lg font-semibold mb-4'>My Bookings</h1>
+
+        {bookings.map((item,index) =>(
+          <div key={index} className='flex flex-col md:flex-row justify-between bg-primary/8 border border-primary/20 rounded-lg mt-4 p-2 max-w-3xl'>
+            <div className='flex flex-col md:flex-row'>
+              <img src={item.show.movie.poster_path} alt="" className='md:max-w-45 aspect-video h-auto object-cover object-bottom rounded' />
+              <div className='flex flex-col p-4'>
+                <h1 className='text-lg font-semibold'>{item.show.movie.title}</h1>
+                <p className='text-sm text-gray-400'>{timeFormat(item.show.movie.runtime)}</p>
+                <p className='text-sm text-gray-400 mt-auto'>{dateFormat(item.show.showDateTime)}</p>
               </div>
-            ))}
+            </div>
+
+            <div className='flex flex-col md:items-end md:text-right justify-between p-4'>
+              <div className='flex items-center gap-4'>
+                <p className='text-2xl font-semibold mb-3'>{currency}{item.amount}</p>
+                {!item.isPaid && <button class="bg-red-500 hover:bg-red-600 px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer text-white">Pay Now</button>}
+              </div>
+              <div className='text-sm'>
+                <p><span className='text-gray-400'>Total Tickets:</span>{item.bookedSeats.length}</p>
+                <p><span className='text-gray-400'>Seat Numbers:</span>{item.bookedSeats.join(", ")}</p>
+              </div>
+            </div>
           </div>
-        )}
+        ))}
       </div>
-    </div>
-  );
+    ) : <Loading />;
 };
 
 export default MyBookings;
