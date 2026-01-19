@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import Loading from '../components/Loading';
-import BlurCircle from '../components/BlurCircle';
-import { dummyBookingData } from '../assets/assets';
-import { dateFormat } from '../lib/dateFormat';
-import timeFormat from '../lib/timeFormat';
+import React, { useState, useEffect } from "react";
+import Loading from "../components/Loading";
+import BlurCircle from "../components/BlurCircle";
+import { dummyBookingData } from "../assets/assets";
+import { dateFormat } from "../lib/dateFormat";
+import timeFormat from "../lib/timeFormat";
+import { api } from "../lib/api";
 
 
 const MyBookings = () => {
@@ -12,10 +13,16 @@ const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const getMyBookings = async() =>{
-    setBookings(dummyBookingData);
-    setLoading(false);
-  }
+  const getMyBookings = async () => {
+    try {
+      const data = await api.getBookings();
+      setBookings(data);
+    } catch (error) {
+      setBookings(dummyBookingData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     getMyBookings();
@@ -40,7 +47,11 @@ const MyBookings = () => {
             <div className='flex flex-col md:items-end md:text-right justify-between p-4'>
               <div className='flex items-center gap-4'>
                 <p className='text-2xl font-semibold mb-3'>{currency}{item.amount}</p>
-                {!item.isPaid && <button class="bg-red-500 hover:bg-red-600 px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer text-white">Pay Now</button>}
+                {!item.isPaid && (
+                  <button className="bg-red-500 hover:bg-red-600 px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer text-white">
+                    Pay Now
+                  </button>
+                )}
               </div>
               <div className='text-sm'>
                 <p><span className='text-gray-400'>Total Tickets:</span>{item.bookedSeats.length}</p>

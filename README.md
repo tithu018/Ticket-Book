@@ -14,3 +14,31 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Backend API (MERN starter)
+
+This repo now includes a lightweight Express API under `server/` to support the React UI with movie, showtime, and booking endpoints.
+
+### Run the API
+
+```bash
+cd server
+npm install
+npm run dev
+```
+
+The API listens on `http://localhost:4000` by default and exposes:
+
+* `GET /api/movies`
+* `GET /api/movies/:id`
+* `GET /api/movies/:id/showtimes`
+* `GET /api/bookings`
+* `POST /api/bookings`
+
+### Connect the frontend
+
+Set the API base URL in your Vite environment:
+
+```bash
+VITE_API_URL=http://localhost:4000
+```
