@@ -7,21 +7,38 @@ import timeFormat from "../lib/timeFormat";
 import DateSelect from "../components/DateSelect";
 import MovieCard from "../components/MovieCard";
 import Loading from "../components/Loading";
+import { api } from "../lib/api";
 
 const MovieDetails =()=> {
   const {id} = useParams();
   const [show,setShow] =useState(null)
+  const [recommended, setRecommended] = useState([])
   const  navigate = useNavigate();
-  const getShow = async ()=>{
-    const show = dummyShowsData.find(show => show._id === id)
-    if(show){
+
+  const getShow = async () => {
+    try {
+      const [movie, showtimes, movies] = await Promise.all([
+        api.getMovie(id),
+        api.getShowtimes(id),
+        api.getMovies(),
+      ]);
       setShow({
-      movie:show,
-      dateTime : dummyDateTimeData
-      })
+        movie,
+        dateTime: showtimes.dateTime,
+      });
+      setRecommended(movies.filter((item) => item._id !== id).slice(0, 4));
+    } catch (error) {
+      const fallback = dummyShowsData.find((item) => item._id === id);
+      if (fallback) {
+        setShow({
+          movie: fallback,
+          dateTime: dummyDateTimeData,
+        });
+      }
+      setRecommended(dummyShowsData.filter((item) => item._id !== id).slice(0, 4));
     }
-    
-  }
+  };
+
   useEffect(()=>{
     getShow()
   },[id])
@@ -86,7 +103,7 @@ const MovieDetails =()=> {
 
   <p className="text-lg font-medium mt-20 mb-8">You May Also Like</p>
   <div className="flex flex-wrap max-sm:justify-center gap-8">
-      {dummyShowsData.slice(0,4).map((movie,index)=>(
+      {recommended.map((movie,index)=>(
         <MovieCard key={index} movie={movie} className=""/>
       ))}
   </div>

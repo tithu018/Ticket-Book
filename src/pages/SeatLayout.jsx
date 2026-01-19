@@ -6,6 +6,7 @@ import { ArrowRightIcon, ClockIcon } from "lucide-react";
 import isoTimeFormat from "../lib/isoTimeFormat";
 import BlurCircle from "../components/BlurCircle";
 import toast from "react-hot-toast";
+import { api } from "../lib/api";
 
 const SeatLayout = () => {
   const groupRows = [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]];
@@ -14,16 +15,30 @@ const SeatLayout = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [show, setShow] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
   const getShow = async () => {
-    const show = dummyShowsData.find((show) => show._id === id);
-    if (show) {
+    try {
+      const [movie, showtimes] = await Promise.all([
+        api.getMovie(id),
+        api.getShowtimes(id),
+      ]);
       setShow({
-        movie: show,
-        dateTime: dummyDateTimeData,
+        movie,
+        dateTime: showtimes.dateTime,
       });
+    } catch (error) {
+      const fallback = dummyShowsData.find((item) => item._id === id);
+      if (fallback) {
+        setShow({
+          movie: fallback,
+          dateTime: dummyDateTimeData,
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,6 +83,10 @@ const SeatLayout = () => {
   useEffect(() => {
     getShow();
   }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return show ? (
     <div className="flex flex-col md:flex-row px-6 md:px-16 lg:px-40 py-30 md:pt-50">
