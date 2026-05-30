@@ -17,16 +17,6 @@ const SeatLayout = () => {
 
   const navigate = useNavigate();
 
-  const getShow = async () => {
-    const show = dummyShowsData.find((show) => show._id === id);
-    if (show) {
-      setShow({
-        movie: show,
-        dateTime: dummyDateTimeData,
-      });
-    }
-  };
-
   const handleSeatClick = (seatId) => {
     if (!selectedTime) {
       return toast("Please select a time");
@@ -66,8 +56,13 @@ const SeatLayout = () => {
   );
 
   useEffect(() => {
-    getShow();
-  }, []);
+    const selectedShow = dummyShowsData.find((show) => show._id === id);
+
+    setShow(selectedShow ? {
+      movie: selectedShow,
+      dateTime: dummyDateTimeData,
+    } : null);
+  }, [id]);
 
   return show ? (
     <div className="flex flex-col md:flex-row px-6 md:px-16 lg:px-40 py-30 md:pt-50">
@@ -113,7 +108,7 @@ const SeatLayout = () => {
         </div>
 
         <button onClick={()=> navigate('/my-bookings')} className="flex items-center gap-1 mt-20 px-10 py-3 transition rounded-full font-medium cursor-pointer active:scale-105 hover:bg-red-700 bg-red-600 text-white">Proceed to Payment
-          <ArrowRightIcon strokwidth={3} className="w-4 h-4" />
+          <ArrowRightIcon strokeWidth={3} className="w-4 h-4" />
         </button>
       </div>
     </div>

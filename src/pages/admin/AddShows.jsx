@@ -1,7 +1,9 @@
 import React from "react";
 
 const AddShows = () => {
-  return <div>Add Shows</div>;
+  return (
+    <div></div>
+  )
 };
 
 export default AddShows;

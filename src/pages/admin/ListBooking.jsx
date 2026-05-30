@@ -1,7 +1,9 @@
 import React from "react";
 
 const ListBooking = () => {
-  return <div>List Booking</div>;
+  return (
+    <div></div>
+  )
 };  
 
 export default ListBooking;

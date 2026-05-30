@@ -12,18 +12,13 @@ const MovieDetails =()=> {
   const {id} = useParams();
   const [show,setShow] =useState(null)
   const  navigate = useNavigate();
-  const getShow = async ()=>{
+
+  useEffect(()=>{
     const show = dummyShowsData.find(show => show._id === id)
-    if(show){
-      setShow({
+    setShow(show ? {
       movie:show,
       dateTime : dummyDateTimeData
-      })
-    }
-    
-  }
-  useEffect(()=>{
-    getShow()
+    } : null)
   },[id])
 
   return show ? (
