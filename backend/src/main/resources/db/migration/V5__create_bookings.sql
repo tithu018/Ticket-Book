@@ -1,2 +1,1 @@
--- Purpose: Database migration placeholder for bookings and booking seats tables.
-
+-- Purpose: Reserved Flyway migration file for future bookings and booking seats table changes.

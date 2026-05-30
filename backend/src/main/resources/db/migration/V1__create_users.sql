@@ -1,2 +1,1 @@
--- Purpose: Database migration placeholder for the users table.
-
+-- Purpose: Reserved Flyway migration file for future users table changes.

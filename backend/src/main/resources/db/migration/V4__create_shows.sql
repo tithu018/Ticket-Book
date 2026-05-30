@@ -1,2 +1,1 @@
--- Purpose: Database migration placeholder for the shows table.
-
+-- Purpose: Reserved Flyway migration file for future shows table changes.

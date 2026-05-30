@@ -1,8 +1,7 @@
 # Purpose: Keep generated backend build files and local IDE files out of Git.
 target/
-.mvn/
+data/
 *.log
 .idea/
 *.iml
 .vscode/
-

@@ -1,2 +1,1 @@
--- Purpose: Database migration placeholder for the movies table.
-
+-- Purpose: Reserved Flyway migration file for future movies table changes.

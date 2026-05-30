@@ -1,2 +1,1 @@
--- Purpose: Database migration placeholder for the payments table.
-
+-- Purpose: Reserved Flyway migration file for future payments table changes.

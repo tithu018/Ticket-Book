@@ -1,2 +1,1 @@
--- Purpose: Database migration placeholder for theaters and screens tables.
-
+-- Purpose: Reserved Flyway migration file for future theaters and screens table changes.

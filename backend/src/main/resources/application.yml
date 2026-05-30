@@ -1,13 +1,17 @@
 # Purpose: Main backend configuration file for database, server, and JWT settings.
 
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
     name: ticketbook
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   datasource:
-    url: jdbc:h2:mem:ticketbook
+    url: jdbc:h2:file:./data/ticketbook;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -15,12 +19,14 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
   flyway:
-    enabled: true
+    enabled: false
 
 app:
   jwt:
     # Purpose: Replace this value before production.
-    secret: change-this-development-secret
+    secret: change-this-development-secret-key-please-replace
     expiration-ms: 86400000
-
