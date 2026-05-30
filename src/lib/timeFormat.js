@@ -1,7 +1,7 @@
 const timeFormat =(minutes)=>{
     const hours = Math.floor(minutes/60);
-    const remender = minutes % 60;
-    return `${hours}h ${remender}m`
+    const remainder = minutes % 60;
+    return `${hours}h ${remainder}m`
 }
 
 export default timeFormat;

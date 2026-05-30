@@ -17,6 +17,21 @@ const SeatLayout = () => {
 
   const navigate = useNavigate();
 
+  const handleProceed = () => {
+    if (!selectedTime) {
+      toast.error("Please select a show time");
+      return;
+    }
+
+    if (selectedSeats.length === 0) {
+      toast.error("Please select at least one seat");
+      return;
+    }
+
+    toast.success("Seats reserved locally");
+    navigate("/my-bookings");
+  };
+
   const handleSeatClick = (seatId) => {
     if (!selectedTime) {
       return toast("Please select a time");
@@ -107,7 +122,12 @@ const SeatLayout = () => {
           </div>
         </div>
 
-        <button onClick={()=> navigate('/my-bookings')} className="flex items-center gap-1 mt-20 px-10 py-3 transition rounded-full font-medium cursor-pointer active:scale-105 hover:bg-red-700 bg-red-600 text-white">Proceed to Payment
+        <div className="mt-10 rounded-lg border border-white/10 bg-gray-900/80 px-5 py-4 text-sm text-gray-300">
+          <p>Selected Seats: <span className="text-white">{selectedSeats.length ? selectedSeats.join(", ") : "None"}</span></p>
+          <p className="mt-1">Show Time: <span className="text-white">{selectedTime ? isoTimeFormat(selectedTime.time) : "Not selected"}</span></p>
+        </div>
+
+        <button onClick={handleProceed} className="flex items-center gap-1 mt-8 px-10 py-3 transition rounded-full font-medium cursor-pointer active:scale-105 hover:bg-red-700 bg-red-600 text-white">Proceed to Payment
           <ArrowRightIcon strokeWidth={3} className="w-4 h-4" />
         </button>
       </div>

@@ -9,6 +9,9 @@ import Movies from "./pages/Movies";
 import MovieDetails from "./pages/MovieDetails";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Theaters from "./pages/Theaters";
+import Releases from "./pages/Releases";
+import NotFound from "./pages/NotFound";
 import {Toaster} from 'react-hot-toast'
 import Footer from "./components/Footer";
 import Layout from "./pages/admin/Layout";
@@ -32,6 +35,8 @@ const App = () => {
           <Route path='/favorite' element={<Favorite/>} />
           <Route path='/login' element={<Login/>} />
           <Route path='/signup' element={<Signup/>} />
+          <Route path='/theaters' element={<Theaters/>} />
+          <Route path='/releases' element={<Releases/>} />
 
           <Route path='/admin/*' element={<Layout/>} >
             <Route index element={ <Dashboard/>} />
@@ -40,6 +45,7 @@ const App = () => {
             <Route path='add-shows' element={<AddShows/>} />
 
           </Route>
+          <Route path='*' element={<NotFound/>} />
       </Routes>
       {!isAdminRoute && <Footer />}
 

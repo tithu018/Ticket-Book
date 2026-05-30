@@ -3,7 +3,7 @@
 
 :root {
   --color-primary: #F84565;
-  --color-primmary-dull: #D63854;
+  --color-primary-dull: #D63854;
 }
 
 *{
@@ -21,4 +21,3 @@ body{
 .no-scrollbar{
   scrollbar-width: none;
 }
-

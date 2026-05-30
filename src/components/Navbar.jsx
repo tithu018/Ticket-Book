@@ -35,7 +35,7 @@ const Navbar = () => {
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div className="fixed top-0 left-0 z-50 w-full flex items-center justify-between px-6 mdl:px-16 lg:px-36 py-5 bg-black/70 backdrop-blur">
+    <div className="fixed top-0 left-0 z-50 w-full flex items-center justify-between px-6 md:px-16 lg:px-36 py-5 bg-black/70 backdrop-blur">
       <Link to="/" className="max-md:px-16">
         <img src={assets.logo} alt="Logo" className="w-36 h-auto" />
       </Link>
@@ -57,8 +57,8 @@ const Navbar = () => {
 
         <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/">Home</Link>
         <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/movies">Movies</Link>
-        <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/">Theaters</Link>
-        <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/">Releases</Link>
+        <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/theaters">Theaters</Link>
+        <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/releases">Releases</Link>
         <Link onClick={() => { window.scrollTo(0, 0); closeMenu(); }} to="/favorite">Favorites</Link>
         {user ? (
           <>
@@ -75,7 +75,14 @@ const Navbar = () => {
 
       {/* Right side */}
       <div className="flex items-center gap-4">
-        <SearchIcon className="max-md:hidden w-6 h-6 cursor-pointer" />
+        <button
+          type="button"
+          onClick={() => navigate("/movies")}
+          className="max-md:hidden rounded-md p-1 text-gray-300 transition hover:bg-white/10 hover:text-white"
+          aria-label="Search movies"
+        >
+          <SearchIcon className="w-6 h-6" />
+        </button>
         {!user ? (
           <div className="max-md:hidden flex items-center gap-3">
             <Link to="/login" className="text-sm hover:text-primary transition">Login</Link>
