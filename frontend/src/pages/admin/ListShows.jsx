@@ -1,9 +1,24 @@
-import React from "react";
-import { dummyDashboardData } from "../../assets/assets";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { dateFormat } from "../../lib/dateFormat";
+import Loading from "../../components/Loading";
+import { api } from "../../lib/api";
 
 const ListShows = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.listAdminShows()
+      .then(setShows)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <section>
@@ -25,7 +40,7 @@ const ListShows = () => {
               </tr>
             </thead>
             <tbody>
-              {dummyDashboardData.activeShows.map((show) => (
+              {shows.map((show) => (
                 <tr key={show._id} className="border-t border-white/10">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">

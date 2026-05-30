@@ -1,9 +1,24 @@
-import React from "react";
-import { dummyBookingData } from "../../assets/assets";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { dateFormat } from "../../lib/dateFormat";
+import Loading from "../../components/Loading";
+import { api } from "../../lib/api";
 
 const ListBooking = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.listAdminBookings()
+      .then(setBookings)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <section>
@@ -26,7 +41,7 @@ const ListBooking = () => {
               </tr>
             </thead>
             <tbody>
-              {dummyBookingData.map((booking, index) => (
+              {bookings.map((booking, index) => (
                 <tr key={`${booking._id}-${index}`} className="border-t border-white/10">
                   <td className="px-5 py-4 font-medium">{booking.user.name}</td>
                   <td className="px-5 py-4">{booking.show.movie.title}</td>

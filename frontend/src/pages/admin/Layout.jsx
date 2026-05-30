@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
+import toast from "react-hot-toast";
 import AdminNavbar from "../../components/admin/AdminNavbar";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import { getAuthUser } from "../../lib/auth";
 
 const Layout = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = getAuthUser();
+    if (!user || user.role !== "ADMIN") {
+      toast.error("Admin login required");
+      navigate("/login");
+    }
+  }, [navigate]);
+
   return (
     <>
       <AdminNavbar />

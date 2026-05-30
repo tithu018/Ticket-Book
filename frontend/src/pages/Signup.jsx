@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ArrowRight, LockKeyhole, Mail, UserRound } from "lucide-react";
 import BlurCircle from "../components/BlurCircle";
-import { saveAuthUser } from "../lib/auth";
+import { saveAuthSession } from "../lib/auth";
+import { api } from "../lib/api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -12,13 +13,14 @@ const Signup = () => {
     email: "",
     password: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!formData.name || !formData.email || !formData.password) {
@@ -31,14 +33,18 @@ const Signup = () => {
       return;
     }
 
-    saveAuthUser({
-      name: formData.name,
-      email: formData.email,
-    });
-
-    toast.success("Account created");
-    navigate("/");
-    window.scrollTo(0, 0);
+    try {
+      setSubmitting(true);
+      const session = await api.signup(formData);
+      saveAuthSession(session);
+      toast.success("Account created");
+      navigate("/");
+      window.scrollTo(0, 0);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -101,8 +107,8 @@ const Signup = () => {
           />
         </div>
 
-        <button type="submit" className="mt-8 flex w-full items-center justify-center gap-2 rounded-md bg-red-500 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-600 active:scale-95">
-          Sign Up
+        <button type="submit" disabled={submitting} className="mt-8 flex w-full items-center justify-center gap-2 rounded-md bg-red-500 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60">
+          {submitting ? "Creating..." : "Sign Up"}
           <ArrowRight className="w-5 h-5" />
         </button>
 

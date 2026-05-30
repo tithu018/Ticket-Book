@@ -1,16 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { CalendarPlus, Clock, DollarSign } from "lucide-react";
-import { dummyShowsData } from "../../assets/assets";
+import { CalendarPlus, Clock, DollarSign, Monitor } from "lucide-react";
+import Loading from "../../components/Loading";
+import { api } from "../../lib/api";
 
 const AddShows = () => {
-  const [selectedMovieId, setSelectedMovieId] = useState(dummyShowsData[0]?._id || "");
+  const [movies, setMovies] = useState([]);
+  const [theaters, setTheaters] = useState([]);
+  const [selectedMovieId, setSelectedMovieId] = useState("");
+  const [selectedScreenId, setSelectedScreenId] = useState("");
   const [showDate, setShowDate] = useState("");
   const [showTime, setShowTime] = useState("");
   const [price, setPrice] = useState("");
   const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const selectedMovie = dummyShowsData.find((movie) => movie._id === selectedMovieId);
+  const screens = useMemo(
+    () => theaters.flatMap((theater) =>
+      theater.screens.map((screen) => ({
+        ...screen,
+        theaterName: theater.name,
+      }))
+    ),
+    [theaters]
+  );
+
+  const selectedMovie = movies.find((movie) => movie._id === selectedMovieId);
+
+  useEffect(() => {
+    Promise.all([api.listMovies(), api.listTheaters()])
+      .then(([movieItems, theaterItems]) => {
+        setMovies(movieItems);
+        setTheaters(theaterItems);
+        setSelectedMovieId(movieItems[0]?._id || "");
+        setSelectedScreenId(theaterItems[0]?.screens?.[0]?._id || "");
+      })
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const addSlot = () => {
     if (!showDate || !showTime) {
@@ -18,8 +46,13 @@ const AddShows = () => {
       return;
     }
 
-    const slot = `${showDate} ${showTime}`;
-    if (slots.includes(slot)) {
+    const localDate = new Date(`${showDate}T${showTime}`);
+    const slot = {
+      label: `${showDate} ${showTime}`,
+      instant: localDate.toISOString(),
+    };
+
+    if (slots.some((item) => item.instant === slot.instant)) {
       toast.error("This show time is already added");
       return;
     }
@@ -28,20 +61,38 @@ const AddShows = () => {
     setShowTime("");
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!selectedMovie || !price || slots.length === 0) {
-      toast.error("Select movie, price, and at least one show time");
+    if (!selectedMovie || !selectedScreenId || !price || slots.length === 0) {
+      toast.error("Select movie, screen, price, and at least one show time");
       return;
     }
 
-    toast.success("Show saved locally");
-    setSlots([]);
-    setPrice("");
-    setShowDate("");
-    setShowTime("");
+    try {
+      setSubmitting(true);
+      await Promise.all(slots.map((slot) => api.createAdminShow({
+        movieId: Number(selectedMovieId),
+        screenId: Number(selectedScreenId),
+        showDateTime: slot.instant,
+        showPrice: Number(price),
+      })));
+
+      toast.success("Show saved");
+      setSlots([]);
+      setPrice("");
+      setShowDate("");
+      setShowTime("");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <section>
@@ -54,7 +105,7 @@ const AddShows = () => {
         <div>
           <h2 className="mb-4 font-medium">Select Movie</h2>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {dummyShowsData.map((movie) => (
+            {movies.map((movie) => (
               <button
                 type="button"
                 key={movie._id}
@@ -73,7 +124,7 @@ const AddShows = () => {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <label className="block">
             <span className="mb-2 flex items-center gap-2 text-sm text-gray-300">
               <DollarSign className="h-4 w-4 text-primary" />
@@ -87,6 +138,24 @@ const AddShows = () => {
               className="w-full rounded-md border border-white/10 bg-gray-900 px-3 py-3 text-sm outline-none focus:border-red-500"
               placeholder="75"
             />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 flex items-center gap-2 text-sm text-gray-300">
+              <Monitor className="h-4 w-4 text-primary" />
+              Screen
+            </span>
+            <select
+              value={selectedScreenId}
+              onChange={(event) => setSelectedScreenId(event.target.value)}
+              className="w-full rounded-md border border-white/10 bg-gray-900 px-3 py-3 text-sm outline-none focus:border-red-500"
+            >
+              {screens.map((screen) => (
+                <option key={screen._id} value={screen._id}>
+                  {screen.theaterName} - {screen.name}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="block">
@@ -127,12 +196,12 @@ const AddShows = () => {
             <div className="mt-4 flex flex-wrap gap-2">
               {slots.map((slot) => (
                 <button
-                  key={slot}
+                  key={slot.instant}
                   type="button"
-                  onClick={() => setSlots((current) => current.filter((item) => item !== slot))}
+                  onClick={() => setSlots((current) => current.filter((item) => item.instant !== slot.instant))}
                   className="rounded-full bg-red-500/15 px-4 py-2 text-sm text-red-200 hover:bg-red-500/25"
                 >
-                  {slot}
+                  {slot.label}
                 </button>
               ))}
             </div>
@@ -141,8 +210,12 @@ const AddShows = () => {
           )}
         </div>
 
-        <button type="submit" className="rounded-md bg-red-500 px-6 py-3 text-sm font-medium transition hover:bg-red-600">
-          Save Show
+        <button
+          type="submit"
+          disabled={submitting}
+          className="rounded-md bg-red-500 px-6 py-3 text-sm font-medium transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting ? "Saving..." : "Save Show"}
         </button>
       </form>
     </section>

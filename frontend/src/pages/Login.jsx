@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import BlurCircle from "../components/BlurCircle";
-import { saveAuthUser } from "../lib/auth";
+import { saveAuthSession } from "../lib/auth";
+import { api } from "../lib/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,13 +12,14 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -25,14 +27,18 @@ const Login = () => {
       return;
     }
 
-    saveAuthUser({
-      email: formData.email,
-      name: formData.email.split("@")[0] || "User",
-    });
-
-    toast.success("Logged in successfully");
-    navigate("/my-bookings");
-    window.scrollTo(0, 0);
+    try {
+      setSubmitting(true);
+      const session = await api.login(formData);
+      saveAuthSession(session);
+      toast.success("Logged in successfully");
+      navigate(session.user?.role === "ADMIN" ? "/admin" : "/my-bookings");
+      window.scrollTo(0, 0);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -78,8 +84,8 @@ const Login = () => {
           />
         </div>
 
-        <button type="submit" className="mt-8 flex w-full items-center justify-center gap-2 rounded-md bg-red-500 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-600 active:scale-95">
-          Login
+        <button type="submit" disabled={submitting} className="mt-8 flex w-full items-center justify-center gap-2 rounded-md bg-red-500 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60">
+          {submitting ? "Logging in..." : "Login"}
           <ArrowRight className="w-5 h-5" />
         </button>
 

@@ -1,32 +1,55 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ReactPlayer from "react-player";
-import { dummyDateTimeData, dummyShowsData, dummyTrailers } from "../assets/assets";
+import toast from "react-hot-toast";
+import { dummyTrailers } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
 import { Heart, PlayCircleIcon, StarIcon, X } from "lucide-react";
 import timeFormat from "../lib/timeFormat";
 import DateSelect from "../components/DateSelect";
 import MovieCard from "../components/MovieCard";
 import Loading from "../components/Loading";
+import { api } from "../lib/api";
 
 const MovieDetails =()=> {
   const {id} = useParams();
   const [show,setShow] =useState(undefined);
+  const [recommendations, setRecommendations] = useState([]);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(()=>{
-    const selectedShow = dummyShowsData.find((movie) => movie._id === id);
-    setShow(selectedShow ? {
-      movie: selectedShow,
-      dateTime : dummyDateTimeData
-    } : null);
+    let mounted = true;
+    setShow(undefined);
+
+    Promise.all([
+      api.getMovie(id),
+      api.getMovieShowTimes(id),
+      api.listMovies(),
+    ])
+      .then(([movie, dateTime, movies]) => {
+        if (!mounted) {
+          return;
+        }
+        setShow({ movie, dateTime });
+        setRecommendations(movies.filter((item) => item._id !== id).slice(0, 4));
+      })
+      .catch((error) => {
+        if (mounted) {
+          toast.error(error.message);
+          setShow(null);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
   },[id]);
 
   const trailer = useMemo(() => {
-    const movieIndex = dummyShowsData.findIndex((movie) => movie._id === id);
+    const movieIndex = recommendations.findIndex((movie) => movie._id === id);
     return dummyTrailers[Math.max(movieIndex, 0) % dummyTrailers.length];
-  }, [id]);
+  }, [id, recommendations]);
 
   if (show === undefined) {
     return <Loading />;
@@ -112,7 +135,7 @@ const MovieDetails =()=> {
 
   <p className="text-lg font-medium mt-20 mb-8">You May Also Like</p>
   <div className="flex flex-wrap max-sm:justify-center gap-8">
-      {dummyShowsData.filter((movie) => movie._id !== id).slice(0,4).map((movie)=>(
+      {recommendations.map((movie)=>(
         <MovieCard key={movie._id} movie={movie} />
       ))}
   </div>

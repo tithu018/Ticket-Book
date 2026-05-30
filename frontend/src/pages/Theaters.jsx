@@ -1,34 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { MapPin, Monitor, ParkingCircle, Popcorn, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BlurCircle from "../components/BlurCircle";
-
-const theaters = [
-  {
-    name: "Tithu Central Cinema",
-    location: "Kandy City Centre",
-    screens: 5,
-    rating: 4.8,
-    features: ["Dolby Atmos", "Premium recliners", "Online snacks"],
-  },
-  {
-    name: "Tithu Liberty Hall",
-    location: "Colombo 03",
-    screens: 4,
-    rating: 4.6,
-    features: ["Laser projection", "Family lounge", "Free parking"],
-  },
-  {
-    name: "Tithu Lakeside",
-    location: "Nuwara Eliya Road",
-    screens: 3,
-    rating: 4.5,
-    features: ["Balcony seating", "Cafe counter", "Accessible entry"],
-  },
-];
+import Loading from "../components/Loading";
+import { api } from "../lib/api";
 
 const Theaters = () => {
   const navigate = useNavigate();
+  const [theaters, setTheaters] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.listTheaters()
+      .then(setTheaters)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <main className="relative min-h-[80vh] overflow-hidden px-6 md:px-16 lg:px-40 pt-32 md:pt-40 pb-20">
@@ -41,25 +33,25 @@ const Theaters = () => {
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {theaters.map((theater) => (
-            <article key={theater.name} className="rounded-lg border border-white/10 bg-gray-900/80 p-5">
+            <article key={theater._id} className="rounded-lg border border-white/10 bg-gray-900/80 p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">{theater.name}</h2>
                   <p className="mt-2 flex items-center gap-2 text-sm text-gray-400">
                     <MapPin className="w-4 h-4 text-primary" />
-                    {theater.location}
+                    {theater.city} - {theater.address}
                   </p>
                 </div>
                 <p className="flex items-center gap-1 text-sm text-gray-300">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  {theater.rating}
+                  4.8
                 </p>
               </div>
 
               <div className="mt-5 flex items-center gap-4 text-sm text-gray-300">
                 <span className="flex items-center gap-2">
                   <Monitor className="w-4 h-4 text-primary" />
-                  {theater.screens} screens
+                  {theater.screens.length} screens
                 </span>
                 <span className="flex items-center gap-2">
                   <ParkingCircle className="w-4 h-4 text-primary" />
@@ -68,10 +60,10 @@ const Theaters = () => {
               </div>
 
               <div className="mt-5 space-y-2 text-sm text-gray-400">
-                {theater.features.map((feature) => (
-                  <p key={feature} className="flex items-center gap-2">
+                {theater.screens.map((screen) => (
+                  <p key={screen._id} className="flex items-center gap-2">
                     <Popcorn className="w-4 h-4 text-primary" />
-                    {feature}
+                    {screen.name}: {screen.seatRows * screen.seatsPerRow} seats
                   </p>
                 ))}
               </div>

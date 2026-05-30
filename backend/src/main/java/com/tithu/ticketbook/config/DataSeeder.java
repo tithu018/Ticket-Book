@@ -20,9 +20,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -54,6 +56,13 @@ public class DataSeeder implements CommandLineRunner {
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final boolean seedDemoUsers;
+    private final String seedAdminEmail;
+    private final String seedAdminPassword;
+    private final String seedAdminName;
+    private final String seedUserEmail;
+    private final String seedUserPassword;
+    private final String seedUserName;
 
     public DataSeeder(
             UserRepository userRepository,
@@ -63,7 +72,14 @@ public class DataSeeder implements CommandLineRunner {
             ShowRepository showRepository,
             BookingRepository bookingRepository,
             PaymentRepository paymentRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            @Value("${app.seed.demo-users:false}") boolean seedDemoUsers,
+            @Value("${app.seed.admin.email:}") String seedAdminEmail,
+            @Value("${app.seed.admin.password:}") String seedAdminPassword,
+            @Value("${app.seed.admin.name:Tithu Admin}") String seedAdminName,
+            @Value("${app.seed.user.email:user@tithu.com}") String seedUserEmail,
+            @Value("${app.seed.user.password:user123}") String seedUserPassword,
+            @Value("${app.seed.user.name:Demo User}") String seedUserName
     ) {
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;
@@ -73,6 +89,13 @@ public class DataSeeder implements CommandLineRunner {
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
         this.passwordEncoder = passwordEncoder;
+        this.seedDemoUsers = seedDemoUsers;
+        this.seedAdminEmail = seedAdminEmail;
+        this.seedAdminPassword = seedAdminPassword;
+        this.seedAdminName = seedAdminName;
+        this.seedUserEmail = seedUserEmail;
+        this.seedUserPassword = seedUserPassword;
+        this.seedUserName = seedUserName;
     }
 
     @Override
@@ -86,20 +109,22 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
-        if (!userRepository.existsByEmailIgnoreCase("admin@tithu.com")) {
+        if (StringUtils.hasText(seedAdminEmail)
+                && StringUtils.hasText(seedAdminPassword)
+                && !userRepository.existsByEmailIgnoreCase(seedAdminEmail)) {
             userRepository.save(new User(
-                    "Tithu Admin",
-                    "admin@tithu.com",
-                    passwordEncoder.encode("admin123"),
+                    seedAdminName,
+                    seedAdminEmail.trim().toLowerCase(),
+                    passwordEncoder.encode(seedAdminPassword),
                     UserRole.ADMIN
             ));
         }
 
-        if (!userRepository.existsByEmailIgnoreCase("user@tithu.com")) {
+        if (seedDemoUsers && !userRepository.existsByEmailIgnoreCase(seedUserEmail)) {
             userRepository.save(new User(
-                    "Demo User",
-                    "user@tithu.com",
-                    passwordEncoder.encode("user123"),
+                    seedUserName,
+                    seedUserEmail.trim().toLowerCase(),
+                    passwordEncoder.encode(seedUserPassword),
                     UserRole.USER
             ));
         }
@@ -258,7 +283,11 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        User user = userRepository.findByEmailIgnoreCase("user@tithu.com").orElseThrow();
+        if (!seedDemoUsers) {
+            return;
+        }
+
+        User user = userRepository.findByEmailIgnoreCase(seedUserEmail).orElseThrow();
         Show show = showRepository.findByActiveTrueOrderByShowDateTimeAsc().get(0);
 
         Booking pendingBooking = new Booking(user, show, show.getShowPrice().multiply(BigDecimal.valueOf(2)));

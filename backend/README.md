@@ -40,6 +40,30 @@ Backend URL:
 http://localhost:8081
 ```
 
+## Deploy Environment
+
+For Render plus a Postgres provider such as Neon, set these backend environment variables:
+
+```txt
+SPRING_DATASOURCE_URL=jdbc:postgresql://HOST/DB?sslmode=require
+SPRING_DATASOURCE_USERNAME=your_database_user
+SPRING_DATASOURCE_PASSWORD=your_database_password
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+SPRING_FLYWAY_ENABLED=true
+SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+SPRING_H2_CONSOLE_ENABLED=false
+APP_JWT_SECRET=use-a-long-random-secret-value
+APP_CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app
+APP_SEED_ADMIN_EMAIL=your-admin-email@example.com
+APP_SEED_ADMIN_PASSWORD=your-secure-admin-password
+```
+
+For Vercel, set this frontend environment variable:
+
+```txt
+VITE_API_BASE_URL=https://your-backend.onrender.com
+```
+
 H2 database console:
 
 ```txt
@@ -86,5 +110,5 @@ GET  /api/admin/bookings
 Suggested commit message:
 
 ```bash
-git commit -m "feat: implement Spring Boot ticket booking backend"
+git commit -m "chore: prepare app for free deployment"
 ```

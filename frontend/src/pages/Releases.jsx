@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import BlurCircle from "../components/BlurCircle";
 import MovieCard from "../components/MovieCard";
-import { dummyShowsData } from "../assets/assets";
+import Loading from "../components/Loading";
+import { api } from "../lib/api";
 
 const Releases = () => {
-  const releases = [...dummyShowsData].sort(
-    (a, b) => new Date(b.release_date) - new Date(a.release_date)
-  );
+  const [releases, setReleases] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.listReleases()
+      .then(setReleases)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <main className="relative min-h-[80vh] overflow-hidden px-6 md:px-16 lg:px-40 pt-32 md:pt-40 pb-20">

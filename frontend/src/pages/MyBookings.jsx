@@ -1,23 +1,48 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import Loading from "../components/Loading";
 import BlurCircle from "../components/BlurCircle";
-import { dummyBookingData } from "../assets/assets";
 import { dateFormat } from "../lib/dateFormat";
 import timeFormat from "../lib/timeFormat";
+import { api } from "../lib/api";
+import { getAuthUser } from "../lib/auth";
 
 const MyBookings = () => {
+  const navigate = useNavigate();
   const currency = import.meta.env.VITE_CURRENCY || "$";
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [payingId, setPayingId] = useState(null);
 
   useEffect(() => {
-    setBookings(dummyBookingData);
-    setLoading(false);
-  }, []);
+    if (!getAuthUser()) {
+      toast.error("Login to view your bookings");
+      navigate("/login");
+      return;
+    }
 
-  const handlePayNow = () => {
-    toast.success("Payment flow will be connected with backend checkout");
+    api.listMyBookings()
+      .then(setBookings)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, [navigate]);
+
+  const handlePayNow = async (bookingId) => {
+    try {
+      setPayingId(bookingId);
+      await api.confirmPayment({ bookingId: Number(bookingId) });
+      toast.success("Payment confirmed");
+      setBookings((current) =>
+        current.map((booking) =>
+          booking._id === bookingId ? { ...booking, isPaid: true } : booking
+        )
+      );
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setPayingId(null);
+    }
   };
 
   if (loading) {
@@ -48,10 +73,11 @@ const MyBookings = () => {
                 {!item.isPaid && (
                   <button
                     type="button"
-                    onClick={handlePayNow}
-                    className="bg-red-500 hover:bg-red-600 px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer text-white"
+                    onClick={() => handlePayNow(item._id)}
+                    disabled={payingId === item._id}
+                    className="bg-red-500 hover:bg-red-600 px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer text-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Pay Now
+                    {payingId === item._id ? "Paying..." : "Pay Now"}
                   </button>
                 )}
               </div>

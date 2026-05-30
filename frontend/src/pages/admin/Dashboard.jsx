@@ -1,15 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { CalendarClock, DollarSign, Ticket, Users } from "lucide-react";
-import { dummyDashboardData } from "../../assets/assets";
 import { dateFormat } from "../../lib/dateFormat";
+import Loading from "../../components/Loading";
+import { api } from "../../lib/api";
 
 const Dashboard = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getAdminDashboard()
+      .then(setDashboard)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  const data = dashboard || {
+    totalBookings: 0,
+    totalRevenue: 0,
+    totalUser: 0,
+    activeShows: [],
+  };
+
   const stats = [
-    { label: "Total Bookings", value: dummyDashboardData.totalBookings, icon: Ticket },
-    { label: "Revenue", value: `${currency}${dummyDashboardData.totalRevenue}`, icon: DollarSign },
-    { label: "Users", value: dummyDashboardData.totalUser, icon: Users },
-    { label: "Active Shows", value: dummyDashboardData.activeShows.length, icon: CalendarClock },
+    { label: "Total Bookings", value: data.totalBookings, icon: Ticket },
+    { label: "Revenue", value: `${currency}${data.totalRevenue}`, icon: DollarSign },
+    { label: "Users", value: data.totalUser, icon: Users },
+    { label: "Active Shows", value: data.activeShows.length, icon: CalendarClock },
   ];
 
   return (
@@ -46,7 +69,7 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {dummyDashboardData.activeShows.map((show) => (
+              {data.activeShows.map((show) => (
                 <tr key={show._id} className="border-t border-white/10">
                   <td className="px-5 py-4 font-medium">{show.movie.title}</td>
                   <td className="px-5 py-4 text-gray-400">{dateFormat(show.showDateTime)}</td>
